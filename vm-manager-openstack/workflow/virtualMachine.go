@@ -7,10 +7,10 @@ import (
 	"github.com/geokal/pulumi-temporal/vm-manager-openstack/webserver"
 	"github.com/pkg/errors"
 
-	"github.com/pulumi/pulumi-random/sdk/v2/go/random"
-	"github.com/pulumi/pulumi/sdk/v2/go/common/tokens"
-	"github.com/pulumi/pulumi/sdk/v2/go/common/workspace"
+	"github.com/pulumi/pulumi-random/sdk/v3/go/random"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
+	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
+	"github.com/pulumi/pulumi/sdk/v3/go/common/workspace"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"go.temporal.io/sdk/activity"
 )
@@ -18,14 +18,13 @@ import (
 func DeployVirtualMachine(ctx context.Context, projectName, vmName string, network *Network) (string, error) {
 	logger := activity.GetLogger(ctx)
 	stackName := fmt.Sprintf("vmgr%s", vmName)
-	project := workspace.Project{
-		Name:    tokens.PackageName(projectName),
-		Runtime: workspace.NewProjectRuntimeInfo("go", nil),
-	}
 
 	logger.Info("Setting up webserver stack " + vmName)
 
-	w, err := auto.NewLocalWorkspace(ctx, auto.Project(project))
+	w, err := auto.NewLocalWorkspace(ctx, auto.Project(workspace.Project{
+		Name:    tokens.PackageName(projectName),
+		Runtime: workspace.NewProjectRuntimeInfo("go", nil),
+	}))
 	if err != nil {
 		return "", errors.Wrap(err, "failed to create workspace")
 	}
@@ -96,8 +95,7 @@ func GetDeployVMFunc(vmName string, network *Network) pulumi.RunFunc {
 			BootScript: pulumi.String(fmt.Sprintf(`#!/bin/bash
 	echo "Hello, from VMGR!" > index.html
 	nohup python -m SimpleHTTPServer 80 &`)),
-			ResourceGroupName: pulumi.String(network.ResourceGroupName),
-			SubnetID:          pulumi.String(network.SubnetID),
+			NetworkID: pulumi.String(network.NetworkID),
 		})
 		if err != nil {
 			return err

@@ -3,11 +3,9 @@ package main
 import (
 	"log"
 
+	vmworkflow "github.com/geokal/pulumi-temporal/vm-manager-openstack/workflow"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
-	"go.temporal.io/sdk/workflow"
-
-	"github.com/geokal/pulumi-temporal/vm-manager-openstack/workflow"
 )
 
 func main() {
@@ -21,10 +19,10 @@ func main() {
 
 	w := worker.New(serviceClient, "pulumi", worker.Options{})
 
-	w.RegisterWorkflow(workflow.TemporaryVirtualMachine)
-	w.RegisterActivity(workflow.EnsureNetwork)
-	w.RegisterActivity(workflow.DeployVirtualMachine)
-	w.RegisterActivity(workflow.TearDownVirtualMachine)
+	w.RegisterWorkflow(vmworkflow.CreateVirtualMachine)
+	w.RegisterActivity(vmworkflow.EnsureNetwork)
+	w.RegisterActivity(vmworkflow.DeployVirtualMachine)
+	w.RegisterActivity(vmworkflow.TearDownVirtualMachine)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {

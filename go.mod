@@ -1,13 +1,13 @@
 module github.com/geokal/pulumi-temporal
 
-go 1.21
+go 1.22
+
+toolchain go1.23.6
 
 require (
 	github.com/pkg/errors v0.9.1
-	github.com/pulumi/pulumi-azure/sdk v0.0.0-20200330121822-37ff63d4418a
 	github.com/pulumi/pulumi-openstack/sdk/v4 v4.1.3
-	github.com/pulumi/pulumi-random/sdk/v2 v2.5.0
-	github.com/pulumi/pulumi/sdk/v2 v2.20.0
+	github.com/pulumi/pulumi-random/sdk/v3 v3.2.0
 	github.com/pulumi/pulumi/sdk/v3 v3.155.0
 	go.temporal.io/sdk v1.33.0
 )
@@ -78,7 +78,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pulumi/appdash v0.0.0-20231130102222-75f619a67231 // indirect
 	github.com/pulumi/esc v0.9.1 // indirect
-	github.com/pulumi/pulumi/sdk v1.13.1 // indirect
+	github.com/pulumi/pulumi/sdk/v2 v2.20.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect

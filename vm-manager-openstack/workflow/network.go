@@ -5,9 +5,9 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi-openstack/sdk/v4/go/openstack/networking"
-	"github.com/pulumi/pulumi/sdk/v2/go/common/tokens"
-	"github.com/pulumi/pulumi/sdk/v2/go/common/workspace"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
+	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
+	"github.com/pulumi/pulumi/sdk/v3/go/common/workspace"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"go.temporal.io/sdk/activity"
 )

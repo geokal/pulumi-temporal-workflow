@@ -7,9 +7,9 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
-func TemporaryVirtualMachine(ctx workflow.Context, vmName string) error {
+func CreateVirtualMachine(ctx workflow.Context, vmName string) error {
 	logger := workflow.GetLogger(ctx)
-	logger.Info("Workflow TemporaryVirtualMachine started")
+	logger.Info("Workflow CreateVirtualMachine started")
 
 	if vmName == "" {
 		return errors.New("no VM name received")
@@ -48,6 +48,6 @@ func TemporaryVirtualMachine(ctx workflow.Context, vmName string) error {
 		return err
 	}
 
-	logger.Info("Temporary Virtual Machine workflow complete")
+	logger.Info("CreateVirtualMachine workflow complete")
 	return nil
 }

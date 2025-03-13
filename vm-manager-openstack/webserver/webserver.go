@@ -1,11 +1,9 @@
 package webserver
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 
-	"github.com/pulumi/pulumi-azure/sdk/go/azure/network"
 	"github.com/pulumi/pulumi-openstack/sdk/v4/go/openstack/compute"
 	"github.com/pulumi/pulumi-openstack/sdk/v4/go/openstack/networking"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -16,7 +14,7 @@ type Webserver struct {
 	pulumi.ResourceState
 
 	FloatingIP       *networking.FloatingIp
-	NetworkInterface *network.NetworkInterface
+	NetworkInterface *networking.Port
 	Instance         *compute.Instance
 }
 
@@ -49,7 +47,7 @@ type WebserverArgs struct {
 // NewWebserver allocates a new web server VM, NIC, and public IP address.
 func NewWebserver(ctx *pulumi.Context, name string, args *WebserverArgs, opts ...pulumi.ResourceOption) (*Webserver, error) {
 	webserver := &Webserver{}
-	err := ctx.RegisterComponentResource("ws-ts-azure-comp:webserver:WebServer", name, webserver, opts...)
+	err := ctx.RegisterComponentResource("organization:webserver:WebServer", name, webserver, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,15 +59,10 @@ func NewWebserver(ctx *pulumi.Context, name string, args *WebserverArgs, opts ..
 		return nil, err
 	}
 
-	webserver.NetworkInterface, err = network.NewNetworkInterface(ctx, name+"-nic", &network.NetworkInterfaceArgs{
-		NetworkId: args.NetworkID,
-		IpConfigurations: network.NetworkInterfaceIpConfigurationArray{
-			network.NetworkInterfaceIpConfigurationArgs{
-				Name:                       pulumi.String("webserveripcfg"),
-				PrivateIpAddressAllocation: pulumi.String("Dynamic"),
-				PublicIpAddressId:          webserver.FloatingIP.ID(),
-			},
-		},
+	webserver.NetworkInterface, err = networking.NewPort(ctx, name+"-port", &networking.PortArgs{
+		NetworkId:      args.NetworkID,
+		AdminStateUp:   pulumi.Bool(true),
+		SecurityGroups: args.SecurityGroups,
 	}, pulumi.Parent(webserver))
 	if err != nil {
 		return nil, err
@@ -89,30 +82,11 @@ func NewWebserver(ctx *pulumi.Context, name string, args *WebserverArgs, opts ..
 		Networks: compute.InstanceNetworkArray{
 			compute.InstanceNetworkArgs{
 				Uuid:    args.NetworkID,
-				Port:    webserver.FloatingIP.Port,
-				Access:  pulumi.Bool(true),
-				FixedIp: webserver.FloatingIP.IpAddress,
+				Port:    webserver.NetworkInterface.ID(),
+				FixedIp: webserver.FloatingIP.FixedIp,
 			},
 		},
-		OsProfile: compute.InstanceOsProfileArgs{
-			ComputerName:  pulumi.String("hostname"),
-			AdminUsername: args.Username,
-			AdminPassword: args.Password.ToStringOutput(),
-			CustomData:    args.BootScript.ToStringOutput(),
-		},
-		OsProfileLinuxConfig: compute.VirtualMachineOsProfileLinuxConfigArgs{
-			DisablePasswordAuthentication: pulumi.Bool(false),
-		},
-		StorageOsDisk: compute.VirtualMachineStorageOsDiskArgs{
-			CreateOption: pulumi.String("FromImage"),
-			Name:         pulumi.String(fmt.Sprintf("%d", rangeIn(10000000, 99999999))),
-		},
-		StorageImageReference: compute.VirtualMachineStorageImageReferenceArgs{
-			Publisher: pulumi.String("canonical"),
-			Offer:     pulumi.String("UbuntuServer"),
-			Sku:       pulumi.String("16.04-LTS"),
-			Version:   pulumi.String("latest"),
-		},
+		UserData: args.BootScript,
 	}, pulumi.Parent(webserver), pulumi.DependsOn([]pulumi.Resource{webserver.NetworkInterface, webserver.FloatingIP}))
 	if err != nil {
 		return nil, err
