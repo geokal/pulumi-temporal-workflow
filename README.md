@@ -6,4 +6,4 @@ Examples of [Temporal](https://temporal.io) workflows that manage cloud resource
 
 Example   | Description |
 --------- | ----------- |
-[VM Manager](vm-manager-azure) | Provision a virtual machine for a fixed time and then destroy it automatically.
+[VM Manager](vm-manager-openstack) | Provision a virtual machine for a fixed time and then destroy it automatically.
