@@ -7,7 +7,7 @@ import (
 	"github.com/geokal/pulumi-temporal/vm-manager-openstack/webserver"
 	"github.com/pkg/errors"
 
-	"github.com/pulumi/pulumi-random/sdk/v3/go/random"
+	"github.com/pulumi/pulumi-random/sdk/v4/go/random"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/workspace"
@@ -33,7 +33,7 @@ func DeployVirtualMachine(ctx context.Context, projectName, vmName string, netwo
 	if err != nil {
 		return "", errors.Wrap(err, "failed to install program plugins")
 	}
-	err = w.InstallPlugin(ctx, "random", "v3.1.0")
+	err = w.InstallPlugin(ctx, "random", "v4.0.0")
 	if err != nil {
 		return "", errors.Wrap(err, "failed to install program plugins")
 	}

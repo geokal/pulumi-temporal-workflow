@@ -1,9 +1,6 @@
 package webserver
 
 import (
-	"math/rand"
-	"time"
-
 	"github.com/pulumi/pulumi-openstack/sdk/v4/go/openstack/compute"
 	"github.com/pulumi/pulumi-openstack/sdk/v4/go/openstack/networking"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -60,9 +57,9 @@ func NewWebserver(ctx *pulumi.Context, name string, args *WebserverArgs, opts ..
 	}
 
 	webserver.NetworkInterface, err = networking.NewPort(ctx, name+"-port", &networking.PortArgs{
-		NetworkId:      args.NetworkID,
-		AdminStateUp:   pulumi.Bool(true),
-		SecurityGroups: args.SecurityGroups,
+		NetworkId:        args.NetworkID,
+		AdminStateUp:     pulumi.Bool(true),
+		SecurityGroupIds: args.SecurityGroups,
 	}, pulumi.Parent(webserver))
 	if err != nil {
 		return nil, err
@@ -81,9 +78,9 @@ func NewWebserver(ctx *pulumi.Context, name string, args *WebserverArgs, opts ..
 		SecurityGroups: args.SecurityGroups,
 		Networks: compute.InstanceNetworkArray{
 			compute.InstanceNetworkArgs{
-				Uuid:    args.NetworkID,
-				Port:    webserver.NetworkInterface.ID(),
-				FixedIp: webserver.FloatingIP.FixedIp,
+				Uuid:      args.NetworkID,
+				Port:      webserver.NetworkInterface.ID(),
+				FixedIpV4: webserver.FloatingIP.FixedIp,
 			},
 		},
 		UserData: args.BootScript,
@@ -96,24 +93,6 @@ func NewWebserver(ctx *pulumi.Context, name string, args *WebserverArgs, opts ..
 }
 
 func (ws *Webserver) GetIPAddress(ctx *pulumi.Context) pulumi.StringOutput {
-	// The public IP address is not allocated until the VM is running, so wait for that resource to create, and then
-	// lookup the IP address again to report its public IP.
-	ready := pulumi.All(ws.Instance.ID(), ws.FloatingIP.Name, ws.FloatingIP.Pool)
-	return ready.ApplyT(func(args []interface{}) (string, error) {
-		name := args[1].(string)
-		pool := args[2].(string)
-		ip, err := networking.GetFloatingIp(ctx, &networking.GetFloatingIpArgs{
-			Name: name,
-			Pool: pool,
-		})
-		if err != nil {
-			return "", err
-		}
-		return ip.IpAddress, nil
-	}).(pulumi.StringOutput)
-}
-
-func rangeIn(low, hi int) int {
-	rand.Seed(time.Now().UnixNano())
-	return low + rand.Intn(hi-low)
+	// Return the floating IP address directly from the FloatingIP resource
+	return ws.FloatingIP.Address
 }

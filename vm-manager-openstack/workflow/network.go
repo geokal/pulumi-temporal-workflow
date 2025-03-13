@@ -30,7 +30,7 @@ func EnsureNetwork(ctx context.Context, projectName string) (*Network, error) {
 		return nil, errors.Wrap(err, "failed to create workspace")
 	}
 
-	err = w.InstallPlugin(ctx, "azure", "v3.19.0")
+	err = w.InstallPlugin(ctx, "openstack", "v4.0.0")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to install program plugins")
 	}
@@ -61,7 +61,7 @@ func EnsureNetwork(ctx context.Context, projectName string) (*Network, error) {
 		return &Network{resourceGroupName, subnetID}, nil
 	}
 
-	err = s.SetConfig(ctx, "azure:location", auto.ConfigValue{Value: "westus"})
+	err = s.SetConfig(ctx, "openstack:region", auto.ConfigValue{Value: "RegionOne"})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to set config")
 	}
@@ -89,7 +89,7 @@ func DeployNetworkFunc(ctx *pulumi.Context) error {
 
 	subnet, err := networking.NewSubnet(ctx, "server-subnet", &networking.SubnetArgs{
 		NetworkId: network.ID(),
-		CidrBlock: pulumi.String("192.168.1.0/24"),
+		Cidr:      pulumi.String("192.168.1.0/24"),
 		IpVersion: pulumi.Int(4),
 	})
 	if err != nil {
